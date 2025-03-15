@@ -4,6 +4,7 @@ from jax.typing import ArrayLike
 from activation_function import ActivationFunction
 
 
-class ReLU(ActivationFunction):
+class Softmax(ActivationFunction):
     def forward(self, inputs: ArrayLike) -> ArrayLike:
-        return jnp.maximum(0, inputs)
+        exps = jnp.exp(inputs - jnp.max(inputs))
+        return exps / jnp.sum(exps, axis=1, keepdims=True)
