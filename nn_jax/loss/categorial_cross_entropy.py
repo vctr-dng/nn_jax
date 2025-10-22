@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import Array
 
-from loss import Loss
+from nn_jax.loss import Loss
 
 class CategorialCrossEntropy(Loss):
     def __init__(self, min_val:float = 1e-8, max_val:float = 1-1e-8):
