@@ -3,8 +3,10 @@ name = "nn-scratch"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = []
+requires-python = ">=3.13"
+dependencies = [
+    "jax[cuda13]>=0.8.0",
+]
 
 [build-system]
 requires = ["hatchling"]
