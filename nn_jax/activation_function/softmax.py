@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax.typing import ArrayLike
 
-from nn_jax.activation_function import ActivationFunction
+from .activation_function import ActivationFunction
 
 
 class Softmax(ActivationFunction):
