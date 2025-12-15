@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from jax import Array
 from jax.typing import ArrayLike
 
 
@@ -9,5 +10,5 @@ class Layer(ABC):
         self.output_size = output_size
 
     @abstractmethod
-    def forward(self, inputs: ArrayLike) -> ArrayLike:
+    def forward(self, inputs: Array) -> Array:
         pass
