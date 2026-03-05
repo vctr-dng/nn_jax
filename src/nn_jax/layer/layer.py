@@ -10,5 +10,5 @@ class Layer(ABC):
         self.output_size = output_size
 
     @abstractmethod
-    def forward(self, inputs: Array) -> Array:
+    def forward(self, input: ArrayLike) -> Array:
         pass

@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 from jax import Array
+from jax.typing import ArrayLike
 
 from .loss import Loss
 
@@ -9,8 +10,11 @@ class CategorialCrossEntropy(Loss):
         self.min_val = min_val
         self.max_val = max_val
 
-    def calculate_loss(self, y_pred: Array, y_true: Array) -> Array:
+    def calculate_loss(self, y_pred: ArrayLike, y_true: ArrayLike) -> Array:
         y_pred_clipped = jnp.clip(y_pred, self.min_val, self.max_val)
+
+        if not isinstance(y_true, Array):
+            y_true = jnp.array(y_true)
 
         if len(y_true.shape) == 1:
             calculated_confidences = y_pred_clipped[range(y_true.shape[0]), y_true]

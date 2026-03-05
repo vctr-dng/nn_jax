@@ -1,10 +1,11 @@
 import jax.numpy as jnp
+from jax import Array
 from jax.typing import ArrayLike
 
 from .activation_function import ActivationFunction
 
 
 class Softmax(ActivationFunction):
-    def forward(self, inputs: ArrayLike) -> ArrayLike:
+    def forward(self, inputs: ArrayLike) -> Array:
         exps = jnp.exp(inputs - jnp.max(inputs, axis=1, keepdims=True))
         return exps / jnp.sum(exps, axis=1, keepdims=True)
