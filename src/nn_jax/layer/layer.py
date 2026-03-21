@@ -1,14 +1,24 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from jax import Array
 from jax.typing import ArrayLike
 
+import jax.numpy as jnp
 
-class Layer(ABC):
-    def __init__(self, input_size: ArrayLike, output_size: ArrayLike):
-        self.input_size = input_size
-        self.output_size = output_size
+from nn_jax.module import Module
+
+
+class Layer(Module):
+    def __init__(self, in_size: ArrayLike, out_size: ArrayLike):
+        super().__init__()
+        self.in_size = in_size
+        self.out_size = out_size
+        self.inputs = jnp.zeros((self.in_size, 1))
+        self.outputs = jnp.zeros((self.out_size, 1))
+
+    def forward(self, inputs: Array) -> Array:
+        self.inputs = inputs
 
     @abstractmethod
-    def forward(self, input: ArrayLike) -> Array:
+    def backward(self, out_grad: ArrayLike) -> Array:
         pass
