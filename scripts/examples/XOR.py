@@ -1,11 +1,11 @@
 # %%
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
-from nn_jax import Sequential, Module
-from nn_jax.layer import Dense
+from nn_jax import Module, Sequential
 from nn_jax.activation import Tanh
+from nn_jax.layer import Dense
 from nn_jax.loss import Loss, MeanSquareError
 from nn_jax.optimizer import Optimizer, StochasticGradientDescent
 
