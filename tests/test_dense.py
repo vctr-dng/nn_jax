@@ -1,3 +1,4 @@
+import jax
 import jax.numpy as jnp
 import pytest
 
@@ -38,3 +39,45 @@ class TestDense:
             x = inputs[i]
             expected_output = jnp.dot(dense.weights, x) + dense.bias
             assert dense.forward(x) == pytest.approx(expected_output)
+
+    def test_backward_matches_autodiff(self):
+        dense = Dense(in_size=self.in_size, out_size=self.out_size)
+        inputs = jnp.ones((self.in_size, 1))
+        out_grad = jnp.arange(self.out_size, dtype=jnp.float32).reshape(
+            self.out_size, 1
+        )
+
+        dense.forward(inputs)
+        in_grad = dense.backward(out_grad)
+
+        def forward_fn(weights, bias, x):
+            return jnp.dot(weights, x) + bias
+
+        expected_w_grad, expected_b_grad, expected_in_grad = jax.grad(
+            lambda w, b, x: jnp.sum(forward_fn(w, b, x) * out_grad),
+            argnums=(0, 1, 2),
+        )(dense.weights, dense.bias, inputs)
+
+        assert dense.w_grad == pytest.approx(expected_w_grad)
+        assert dense.b_grad == pytest.approx(expected_b_grad)
+        assert in_grad == pytest.approx(expected_in_grad)
+
+    def test_backward_accumulates_gradients(self):
+        dense = Dense(in_size=self.in_size, out_size=self.out_size)
+        inputs = jnp.ones((self.in_size, 1))
+        out_grad = jnp.ones((self.out_size, 1))
+
+        dense.forward(inputs)
+        dense.backward(out_grad)
+        first_w_grad = dense.w_grad
+        first_b_grad = dense.b_grad
+
+        dense.forward(inputs)
+        dense.backward(out_grad)
+
+        assert dense.w_grad == pytest.approx(2 * first_w_grad)
+        assert dense.b_grad == pytest.approx(2 * first_b_grad)
+
+        dense.zero_grad()
+        assert dense.w_grad == pytest.approx(jnp.zeros_like(dense.w_grad))
+        assert dense.b_grad == pytest.approx(jnp.zeros_like(dense.b_grad))
