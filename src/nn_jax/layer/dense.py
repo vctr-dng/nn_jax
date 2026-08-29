@@ -20,6 +20,7 @@ class Dense(Layer):
         self.bias: Array = jnp.zeros(shape=(self.out_size, 1), dtype=self.weight_type)
         self.w_grad: Array = jnp.zeros_like(self.weights)
         self.b_grad: Array = jnp.zeros_like(self.bias)
+        self.n_parameters = self.w_grad.size + self.b_grad.size
 
     def forward(self, inputs: Array) -> Array:
         super().forward(inputs)
@@ -27,8 +28,8 @@ class Dense(Layer):
         return self.outputs
 
     def backward(self, out_grad: Array) -> Array:
-        self.w_grad = jnp.dot(out_grad, self.inputs.T)
-        self.b_grad = out_grad
+        self.w_grad = self.w_grad + jnp.dot(out_grad, self.inputs.T)
+        self.b_grad = self.b_grad + out_grad.sum(axis=1, keepdims=True)
         in_grad = jnp.dot(self.weights.T, out_grad)
 
         return in_grad
