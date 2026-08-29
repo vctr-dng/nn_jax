@@ -22,3 +22,10 @@ class CategoricalCrossEntropy(Loss):
         negative_log_likelihoods = -jnp.sum(y_true * jnp.log(y_pred_clipped))
 
         return negative_log_likelihoods
+
+    def derivative(self, y_pred: ArrayLike, y_true: ArrayLike) -> Array:
+        # y_true must be a one-hot encoded array
+
+        y_pred_clipped = jnp.clip(y_pred, self.min_val, self.max_val)
+
+        return -y_true / y_pred_clipped
