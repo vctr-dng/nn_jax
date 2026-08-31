@@ -1,7 +1,8 @@
 from jax import Array
 
-from .optimizer import Optimizer
 from nn_jax.module import Module
+
+from .optimizer import Optimizer
 
 
 class StochasticGradientDescent(Optimizer):

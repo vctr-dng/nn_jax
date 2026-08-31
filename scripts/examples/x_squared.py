@@ -1,14 +1,14 @@
 # %%
 import logging
 
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm, trange
 
-from nn_jax import Sequential, Module
-from nn_jax.layer import Dense
+from nn_jax import Module, Sequential
 from nn_jax.activation import ReLU
+from nn_jax.layer import Dense
 from nn_jax.loss import Loss, MeanSquareError
 from nn_jax.optimizer import Optimizer, StochasticGradientDescent
 
@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-#%%
+# %%
 rnd_key = jax.random.PRNGKey(0)
 
 X = jnp.linspace(-20, 20, 1000)
@@ -36,7 +36,9 @@ ax.legend()
 
 split_percentage = 0.8
 
-train_indices = jax.random.choice(rnd_key, jnp.arange(len(X)), (int(len(X) * split_percentage),), replace=False)
+train_indices = jax.random.choice(
+    rnd_key, jnp.arange(len(X)), (int(len(X) * split_percentage),), replace=False
+)
 test_indices = jnp.setdiff1d(jnp.arange(len(X)), train_indices)
 
 X_train = X[train_indices]
@@ -65,27 +67,29 @@ Y_test_norm = (Y_test - Y_mean) / Y_std
 
 # %%
 
-network = Sequential([
-    Dense(1, 5),
-    ReLU(),
-    Dense(5, 5),
-    ReLU(),
-    Dense(5, 5),
-    ReLU(),
-    Dense(5, 1),
+network = Sequential(
+    [
+        Dense(1, 5),
+        ReLU(),
+        Dense(5, 5),
+        ReLU(),
+        Dense(5, 5),
+        ReLU(),
+        Dense(5, 1),
     ]
 )
 
 loss = MeanSquareError()
 optimizer = StochasticGradientDescent(network, learning_rate=0.01)
 
-# n_parameters = 
+# n_parameters =
 # print(f"Number of parameters: {n_parameters}")
 
 # if X_train.shape[0] < n_parameters:
 #     logger.warning(f"Number of samples {X_train.shape[0]} is too low compared to number of parameters {n_parameters}, risk of overfitting")
 
 # %%
+
 
 def train(
     module: Module,
@@ -103,7 +107,9 @@ def train(
     for i in trange(epochs, desc="Epoch"):
         error = 0
         n_batches = 0
-        for start in tqdm(range(0, len(x_train), batch_size), desc="Training", leave=False):
+        for start in tqdm(
+            range(0, len(x_train), batch_size), desc="Training", leave=False
+        ):
             x_batch = x_train[start : start + batch_size].reshape(1, -1)
             y_batch = y_train[start : start + batch_size].reshape(1, -1)
             y_pred = module.forward(x_batch)
@@ -119,7 +125,9 @@ def train(
         if x_test is not None and y_test is not None:
             error = 0
             n_test_batches = 0
-            for start in tqdm(range(0, len(x_test), batch_size), desc="Testing", leave=False):
+            for start in tqdm(
+                range(0, len(x_test), batch_size), desc="Testing", leave=False
+            ):
                 x_batch = x_test[start : start + batch_size].reshape(1, -1)
                 y_batch = y_test[start : start + batch_size].reshape(1, -1)
                 y_pred = module.forward(x_batch)
@@ -130,11 +138,14 @@ def train(
 
     return train_errors, test_errors
 
-#%%
 
-train_errors, test_errors = train(network, loss, optimizer, 200, X_train_norm, Y_train_norm, X_test_norm, Y_test_norm)
+# %%
 
-#%%
+train_errors, test_errors = train(
+    network, loss, optimizer, 200, X_train_norm, Y_train_norm, X_test_norm, Y_test_norm
+)
+
+# %%
 
 Y_pred_norm = jnp.array([network.forward(x) for x in X_test_norm]).reshape(-1)
 Y_pred = Y_pred_norm * Y_std + Y_mean

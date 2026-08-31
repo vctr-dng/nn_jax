@@ -1,7 +1,5 @@
 import jax.numpy as jnp
-import jax.random as random
-
-from jax import Array, tree_util
+from jax import Array, random, tree_util
 
 from .layer import Layer
 
