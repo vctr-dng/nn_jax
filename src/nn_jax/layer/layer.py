@@ -1,9 +1,8 @@
 from abc import abstractmethod
 
+import jax.numpy as jnp
 from jax import Array
 from jax.typing import ArrayLike
-
-import jax.numpy as jnp
 
 from nn_jax.module import Module
 

@@ -5,7 +5,7 @@ from .relu import ReLU
 from .softmax import Softmax
 from .tanh import Tanh
 
-__all__ = [Activation, ReLU, Softmax, Tanh]
+__all__ = ["Activation", "ReLU", "Softmax", "Tanh"]
 
 for activation_function in __all__:
     tree_util.register_pytree_node(
