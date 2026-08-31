@@ -42,7 +42,6 @@ jobs:
       checks: write
       contents: read
       id-token: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -76,15 +75,7 @@ jobs:
           report_paths: pytest.xml
           require_tests: true
           include_time_in_summary: true
-
-      - name: Publish pull request coverage report
-        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: MishaKav/pytest-coverage-comment@v1
-        with:
-          pytest-coverage-path: pytest-coverage.txt
-          pytest-xml-coverage-path: coverage.xml
-          junitxml-path: pytest.xml
-          default-branch: main
+          comment: false
 
       - name: Upload coverage to Codecov
         if: always()
