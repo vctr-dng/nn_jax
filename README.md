@@ -1,5 +1,9 @@
 # nn_jax
 
+[![Version](https://img.shields.io/github/v/tag/vctr-dng/nn_jax?sort=semver&label=version)](https://github.com/vctr-dng/nn_jax/tags)
+[![CI](https://github.com/vctr-dng/nn_jax/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vctr-dng/nn_jax/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/vctr-dng/nn_jax/graph/badge.svg)](https://codecov.io/gh/vctr-dng/nn_jax)
+
 Neural Networks from scratch using [JAX](https://jax.readthedocs.io/en/latest/)
 
 ## Getting Started

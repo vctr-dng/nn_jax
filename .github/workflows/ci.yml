@@ -1,0 +1,200 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: hooks
+        name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
+        continue-on-error: true
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo '## Pre-commit'
+            echo
+            echo "Status: \`${{ steps.hooks.outcome }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on hook errors
+        if: steps.hooks.outcome == 'failure'
+        run: exit 1
+
+  tests:
+    needs: version
+    if: >-
+      needs.version.result == 'success' && (github.event_name == 'push' ||
+      needs.version.outputs.source_changed == 'true' || needs.version.outputs.tests_changed == 'true')
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - id: pytest
+        name: Run pytest with coverage
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          uv run pytest \
+            --junitxml=pytest.xml \
+            --cov=nn_jax \
+            --cov-report=term-missing:skip-covered \
+            --cov-report=xml:coverage.xml | tee pytest-coverage.txt
+
+      - name: Publish test results
+        id: junit
+        if: always()
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: pytest.xml
+          require_tests: true
+          include_time_in_summary: true
+          comment: false
+
+      - name: Upload coverage to Codecov
+        if: always()
+        continue-on-error: true
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          use_oidc: true
+          fail_ci_if_error: false
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo '## Test and Coverage Results'
+            echo
+            echo "Pytest: \`${{ steps.pytest.outcome }}\`"
+            echo "JUnit report: \`${{ steps.junit.outcome }}\`"
+            echo
+            echo '```text'
+            if [ -f pytest-coverage.txt ]; then
+              cat pytest-coverage.txt
+            else
+              echo 'Pytest did not produce a coverage report.'
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on test errors
+        if: steps.pytest.outcome == 'failure'
+        run: exit 1
+
+  version:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    outputs:
+      source_changed: ${{ steps.check.outputs.source_changed }}
+      tests_changed: ${{ steps.check.outputs.tests_changed }}
+      version: ${{ steps.check.outputs.version }}
+      version_changed: ${{ steps.check.outputs.version_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - id: check
+        name: Verify semantic version bump
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ "$BASE_SHA" = '0000000000000000000000000000000000000000' ]; then
+            BASE_SHA="$(git rev-parse HEAD^)"
+          fi
+          python .github/scripts/check_version_bump.py \
+            "$BASE_SHA" "$GITHUB_SHA" \
+            --github-output "$GITHUB_OUTPUT" | tee version-check.txt
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo '## Semantic Versioning'
+            echo
+            if [ -f version-check.txt ]; then
+              cat version-check.txt
+            else
+              echo 'The version check did not produce a report.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on version errors
+        if: steps.check.outcome == 'failure'
+        run: exit 1
+
+  release-tag:
+    if: >-
+      always() && github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.pre-commit.result == 'success' && needs.version.result == 'success' &&
+      (needs.tests.result == 'success' || needs.tests.result == 'skipped')
+    needs: [pre-commit, tests, version]
+    runs-on: ubuntu-latest
+    concurrency: release-main
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release tag
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          VERSION_CHANGED: ${{ needs.version.outputs.version_changed }}
+        run: |
+          tag="v$VERSION"
+          if git rev-parse --verify --quiet "refs/tags/$tag"; then
+            if [ "$VERSION_CHANGED" = 'true' ]; then
+              echo "Version $VERSION changed, but tag $tag already exists." >&2
+              exit 1
+            fi
+            echo "Tag $tag already exists; no release is needed."
+            exit 0
+          fi
+
+          git -c user.name='github-actions[bot]' \
+            -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            tag --annotate "$tag" "$GITHUB_SHA" --message "Release $tag"
+          git push origin "$tag"
+
+          {
+            echo '## Release Tag'
+            echo
+            echo "Created \`$tag\` for \`$GITHUB_SHA\`."
+          } >> "$GITHUB_STEP_SUMMARY"
