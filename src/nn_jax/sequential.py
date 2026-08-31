@@ -1,49 +1,26 @@
-from jax import Array
+from collections.abc import Iterable
+
+from jax import tree_util
 from jax.typing import ArrayLike
 
 from nn_jax.module import Module
 
 
+@tree_util.register_pytree_node_class
 class Sequential(Module):
-    def __init__(self, modules: list[Module]):
-        super().__init__()
-        self.modules: list[Module] = modules
-        self.n_parameters: list[int] = [len(module.parameters) for module in modules]
+    def __init__(self, modules: Iterable[Module]):
+        self.modules: tuple[Module, ...] = tuple(modules)
 
-    def forward(self, inputs: ArrayLike) -> ArrayLike:
+    def forward(self, x: ArrayLike) -> ArrayLike:
         for module in self.modules:
-            inputs = module.forward(inputs)
-        return inputs
+            x = module.forward(x)
+        return x
 
-    def backward(self, out_grad: ArrayLike) -> ArrayLike:
-        in_grad = out_grad
-        for module in reversed(self.modules):
-            in_grad = module.backward(in_grad)
-        return in_grad
+    def tree_flatten(self):
+        children = self.modules
+        aux_data = None
+        return (children, aux_data)
 
-    @property
-    def parameters(self) -> list[Array]:
-        parameters: list[Array] = []
-        for module in self.modules:
-            parameters.extend(module.parameters)
-        return parameters
-
-    @parameters.setter
-    def parameters(self, new_parameters: list[Array]):
-        start_index = 0
-        for i in range(len(self.modules)):
-            n = self.n_parameters[i]
-            updated_parameters = new_parameters[start_index : start_index + n]
-            self.modules[i].parameters = updated_parameters
-            start_index += n
-
-    @property
-    def gradients(self) -> list[Array]:
-        gradients: list[Array] = []
-        for module in self.modules:
-            gradients.extend(module.gradients)
-        return gradients
-
-    def zero_grad(self):
-        for module in self.modules:
-            module.zero_grad()
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        return cls(tuple(children))

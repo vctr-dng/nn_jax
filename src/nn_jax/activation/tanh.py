@@ -1,14 +1,11 @@
 import jax.numpy as jnp
-from jax import Array
+from jax import tree_util
 from jax.typing import ArrayLike
 
 from .activation import Activation
 
 
+@tree_util.register_pytree_node_class
 class Tanh(Activation):
-    def forward(self, inputs: ArrayLike) -> Array:
-        super().forward(inputs)
-        return jnp.tanh(inputs)
-
-    def derivative(self, inputs: ArrayLike) -> Array:
-        return 1 - jnp.tanh(inputs) ** 2
+    def forward(self, x: ArrayLike) -> ArrayLike:
+        return jnp.tanh(x)

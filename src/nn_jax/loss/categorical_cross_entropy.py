@@ -14,18 +14,11 @@ class CategoricalCrossEntropy(Loss):
         self.min_val = min_val
         self.max_val = max_val
 
-    def calculate_loss(self, y_pred: ArrayLike, y_true: ArrayLike) -> Array:
-        # y_true must be a one-hot encoded array
+    def calculate_loss(self, pred: ArrayLike, target: ArrayLike) -> Array:
+        # target must be a one-hot encoded array
 
-        y_pred_clipped = jnp.clip(y_pred, self.min_val, self.max_val)
+        pred_clipped = jnp.clip(pred, self.min_val, self.max_val)
 
-        negative_log_likelihoods = -jnp.sum(y_true * jnp.log(y_pred_clipped))
+        negative_log_likelihoods = -jnp.sum(target * jnp.log(pred_clipped), axis=-1)
 
-        return negative_log_likelihoods
-
-    def derivative(self, y_pred: ArrayLike, y_true: ArrayLike) -> Array:
-        # y_true must be a one-hot encoded array
-
-        y_pred_clipped = jnp.clip(y_pred, self.min_val, self.max_val)
-
-        return -y_true / y_pred_clipped
+        return jnp.mean(negative_log_likelihoods)

@@ -1,20 +1,16 @@
-from jax import Array
+import jax
 
-from nn_jax.module import Module
-
+from ..sequential import Sequential
 from .optimizer import Optimizer
 
 
-class StochasticGradientDescent(Optimizer):
-    def __init__(self, module: Module, learning_rate: float = 0.01):
-        super().__init__(module)
+class StochasticGradientDescent(Optimizer[Sequential]):
+    def __init__(self, learning_rate: float = 0.01):
         self.learning_rate: float = learning_rate
 
-    def step(self):
-        parameters = self.module.parameters
-        gradients = self.module.gradients
-
-        new_parameters = list[Array]()
-        for i in range(len(parameters)):
-            new_parameters.append(parameters[i] - self.learning_rate * gradients[i])
-        self.module.parameters = new_parameters
+    def __call__(self, model: Sequential, grads: Sequential) -> Sequential:
+        return jax.tree.map(
+            lambda param, grad: param - self.learning_rate * grad,
+            model,
+            grads,
+        )

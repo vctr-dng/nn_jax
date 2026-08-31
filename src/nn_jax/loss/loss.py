@@ -4,14 +4,10 @@ from jax.typing import ArrayLike
 
 
 class Loss(ABC):
-    def __call__(self, y_pred: ArrayLike, y_true: ArrayLike) -> ArrayLike:
-        loss: ArrayLike = self.calculate_loss(y_pred, y_true)
+    def __call__(self, pred: ArrayLike, target: ArrayLike) -> ArrayLike:
+        loss: ArrayLike = self.calculate_loss(pred, target)
         return loss
 
     @abstractmethod
-    def calculate_loss(self, y_pred: ArrayLike, y_true: ArrayLike) -> ArrayLike:
-        pass
-
-    @abstractmethod
-    def derivative(self, y_pred: ArrayLike, y_true: ArrayLike) -> ArrayLike:
+    def calculate_loss(self, pred: ArrayLike, target: ArrayLike) -> ArrayLike:
         pass
