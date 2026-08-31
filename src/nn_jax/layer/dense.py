@@ -1,5 +1,4 @@
-import jax.numpy as jnp
-from jax import Array, random, tree_util
+from jax import Array, tree_util
 
 from .layer import Layer
 
@@ -9,41 +8,15 @@ class Dense(Layer):
     weights: Array
     bias: Array
 
-    def __init__(
-        self,
-        in_size: int,
-        out_size: int,
-        key: Array | None = None,
-        weights: Array | None = None,
-        bias: Array | None = None,
-    ):
-        super().__init__(in_size, out_size)
-
-        if key is not None and weights is not None:
-            raise ValueError("Key and weights cannot be provided together")
-
-        if weights is None:
-            if key is None:
-                raise ValueError("Key is required if weights are not provided")
-            self._init_weights(key)
-        else:
-            if weights.shape != (self.out_size, self.in_size):
-                raise ValueError(
-                    f"Weights shape must be ({self.out_size}, {self.in_size}), got {weights.shape}"
-                )
-            self.weights = weights
-
-        if bias is not None:
-            if bias.shape != (self.out_size,):
-                raise ValueError(
-                    f"Bias shape must be ({self.out_size},), got {bias.shape}"
-                )
-            self.bias = bias
-        else:
-            self.bias = jnp.zeros((self.out_size,))
-
-    def _init_weights(self, key: Array):
-        self.weights = 0.1 * random.normal(key, (self.out_size, self.in_size))
+    # def __init__(
+    #     self,
+    #     in_size: int,
+    #     out_size: int,
+    #     key: Array | None = None,
+    #     weights: Array | None = None,
+    #     bias: Array | None = None,
+    # ):
+    #     super().__init__(in_size, out_size, key, weights, bias)
 
     @classmethod
     def from_parameters(
