@@ -1,8 +1,7 @@
-import jax.numpy as jnp
-
 from jax import Array
 
 from .layer import Layer
+
 
 class Conv2D(Layer):
     def __init__(

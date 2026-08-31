@@ -3,7 +3,7 @@ from jax import Array
 
 
 def extract_patches(x: Array, kernel_size: tuple[int, ...], stride: int) -> Array:
-    H_in, W_in, C_in = x.shape
+    H_in, W_in, C_in = x.shape  # noqa: RUF059
     H_ker, W_ker = kernel_size
     H_out = output_spatial_size(H_in, H_ker, stride, 0)
     W_out = output_spatial_size(W_in, W_ker, stride, 0)
