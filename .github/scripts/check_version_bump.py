@@ -75,15 +75,20 @@ def main() -> None:
     parse_version(current)
     previous = project_version(git_output("show", f"{args.base_sha}:pyproject.toml"))
     parse_version(previous)
-    changed_files = git_output(
+    source_files = git_output(
         "diff", "--name-only", f"{args.base_sha}...{args.head_sha}", "--", "src/"
     )
-    source_changed = bool(changed_files)
+    test_files = git_output(
+        "diff", "--name-only", f"{args.base_sha}...{args.head_sha}", "--", "tests/"
+    )
+    source_changed = bool(source_files)
+    tests_changed = bool(test_files)
     version_changed = current != previous
 
     print(f"Base version: `{previous}`")
     print(f"Current version: `{current}`")
     print(f"Source changed: `{source_changed}`")
+    print(f"Tests changed: `{tests_changed}`")
     print(f"Version changed: `{version_changed}`")
     if source_changed:
         print("A valid version bump was required because `src/` changed.")
@@ -99,6 +104,7 @@ def main() -> None:
     if args.github_output:
         args.github_output.write_text(
             f"source_changed={str(source_changed).lower()}\n"
+            f"tests_changed={str(tests_changed).lower()}\n"
             f"version={current}\n"
             f"version_changed={str(version_changed).lower()}\n"
         )

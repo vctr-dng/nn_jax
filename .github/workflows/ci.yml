@@ -36,7 +36,10 @@ jobs:
         run: exit 1
 
   tests:
-    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    needs: version
+    if: >-
+      needs.version.result == 'success' && (github.event_name == 'push' ||
+      needs.version.outputs.source_changed == 'true' || needs.version.outputs.tests_changed == 'true')
     runs-on: ubuntu-latest
     permissions:
       checks: write
@@ -113,6 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       source_changed: ${{ steps.check.outputs.source_changed }}
+      tests_changed: ${{ steps.check.outputs.tests_changed }}
       version: ${{ steps.check.outputs.version }}
       version_changed: ${{ steps.check.outputs.version_changed }}
     steps:
@@ -155,7 +159,10 @@ jobs:
         run: exit 1
 
   release-tag:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      always() && github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.pre-commit.result == 'success' && needs.version.result == 'success' &&
+      (needs.tests.result == 'success' || needs.tests.result == 'skipped')
     needs: [pre-commit, tests, version]
     runs-on: ubuntu-latest
     concurrency: release-main
