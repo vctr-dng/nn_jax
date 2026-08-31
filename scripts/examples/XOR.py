@@ -3,21 +3,21 @@ import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
-from nn_jax import Module, Sequential
+from nn_jax import Sequential
 from nn_jax.activation import Tanh
 from nn_jax.layer import Dense
-from nn_jax.loss import Loss, MeanSquareError
-from nn_jax.optimizer import Optimizer, StochasticGradientDescent
+from nn_jax.loss import MeanSquareError
+from nn_jax.optimizer import StochasticGradientDescent
 
 # %%
-X = jnp.reshape(jnp.array([[0, 0], [0, 1], [1, 0], [1, 1]]), (4, 2, 1))
-Y_true = jnp.reshape(jnp.array([[0], [1], [1], [0]]), (4, 1, 1))
+X = jnp.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=jnp.float32)
+Y_true = jnp.array([[0], [1], [1], [0]], dtype=jnp.float32)
 
 fig, ax = plt.subplots(figsize=(4.5, 4))
 sc = ax.scatter(
-    X[:, 0, 0],
-    X[:, 1, 0],
-    c=Y_true[:, 0, 0],
+    X[:, 0],
+    X[:, 1],
+    c=Y_true[:, 0],
     cmap="viridis",
     vmin=0.0,
     vmax=1.0,
@@ -30,58 +30,58 @@ cbar.set_ticks([0.0, 0.25, 0.5, 0.75, 1.0])
 plt.show()
 
 # %%
-network = Sequential([Dense(2, 3), Tanh(), Dense(3, 1), Tanh()])
+layer_keys = jax.random.split(jax.random.key(0), 2)
+network = Sequential(
+    [Dense(2, 3, layer_keys[0]), Tanh(), Dense(3, 1, layer_keys[1]), Tanh()]
+)
 
 
 def train(
-    module: Module,
+    model: Sequential,
     x_train: jax.Array,
     y_train: jax.Array,
-    loss: Loss,
-    optimizer: Optimizer,
+    loss: MeanSquareError,
+    optimizer: StochasticGradientDescent,
     epochs: int,
-) -> list[float]:
+) -> tuple[Sequential, list[float]]:
     errors: list[float] = []
 
-    for i in range(epochs):
-        error = 0
-        for x, y_true in zip(x_train, y_train):
-            y_pred = module.forward(x)
-            error += loss(y_pred, y_true)
-            loss_derivative = loss.derivative(y_pred, y_true)
-            module.backward(loss_derivative)
-            optimizer.step()
-            optimizer.zero_grad()
+    def loss_fn(current_model: Sequential, x_batch: jax.Array, y_batch: jax.Array):
+        predictions = jax.vmap(current_model.forward)(x_batch)
+        return loss(predictions, y_batch)
 
-        errors.append(error / len(x_train))
+    @jax.jit
+    def train_step(current_model: Sequential, x_batch: jax.Array, y_batch: jax.Array):
+        error, grads = jax.value_and_grad(loss_fn)(current_model, x_batch, y_batch)
+        return optimizer(current_model, grads), error
+
+    for i in range(epochs):
+        model, error = train_step(model, x_train, y_train)
+
+        errors.append(float(error))
         if i % 100 == 0:
             print(f"{i + 1}/{epochs} - Error: {errors[-1]:.4f}")
 
-    return errors
+    return model, errors
 
 
-optimizer = StochasticGradientDescent(network, learning_rate=0.05)
+optimizer = StochasticGradientDescent(learning_rate=0.05)
 
-errors = train(network, X, Y_true, MeanSquareError(), optimizer, 1000)
+network, errors = train(network, X, Y_true, MeanSquareError(), optimizer, 2000)
 
 plt.plot(errors)
 plt.show()
 
 # %%
 
-Y_pred: list[jax.Array] = []
-
-for x in X:
-    y_pred = network.forward(x)
-    Y_pred.append(y_pred)
-
-Y_pred: jax.Array = jnp.array(Y_pred)
+predict = jax.jit(jax.vmap(lambda model, x: model.forward(x), in_axes=(None, 0)))
+Y_pred = predict(network, X)
 
 fig, ax = plt.subplots(figsize=(4.5, 4))
 sc = ax.scatter(
-    X[:, 0, 0],
-    X[:, 1, 0],
-    c=Y_pred[:, 0, 0],
+    X[:, 0],
+    X[:, 1],
+    c=Y_pred[:, 0],
     cmap="viridis",
     vmin=0.0,
     vmax=1.0,

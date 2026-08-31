@@ -6,53 +6,49 @@ from nn_jax.activation import ReLU, Softmax, Tanh
 
 
 class TestReLU:
-    def test_backward_matches_autodiff(self):
+    def test_vjp_matches_analytical_gradient(self):
         relu = ReLU()
-        inputs = jnp.array([[-1.0], [0.5], [2.0]])
-        out_grad = jnp.array([[1.0], [1.0], [1.0]])
+        inputs = jnp.array([-1.0, 0.5, 2.0])
+        out_grad = jnp.array([1.0, 1.0, 1.0])
 
-        relu.forward(inputs)
-        in_grad = relu.backward(out_grad)
+        _, vjp = jax.vjp(relu.forward, inputs)
+        (in_grad,) = vjp(out_grad)
 
-        expected = jax.grad(lambda x: jnp.sum(jnp.maximum(0, x)))(inputs)
+        expected = out_grad * jnp.where(inputs > 0, 1, 0)
         assert in_grad == pytest.approx(expected)
 
 
 class TestTanh:
-    def test_backward_matches_autodiff(self):
+    def test_vjp_matches_analytical_gradient(self):
         tanh = Tanh()
-        inputs = jnp.array([[-1.0], [0.5], [2.0]])
-        out_grad = jnp.array([[1.0], [1.0], [1.0]])
+        inputs = jnp.array([-1.0, 0.5, 2.0])
+        out_grad = jnp.array([1.0, 1.0, 1.0])
 
-        tanh.forward(inputs)
-        in_grad = tanh.backward(out_grad)
+        _, vjp = jax.vjp(tanh.forward, inputs)
+        (in_grad,) = vjp(out_grad)
 
-        expected = jax.grad(lambda x: jnp.sum(jnp.tanh(x)))(inputs)
+        expected = out_grad * (1 - jnp.tanh(inputs) ** 2)
         assert in_grad == pytest.approx(expected)
 
 
 class TestSoftmax:
-    def test_forward_sums_to_one(self):
+    def test_forward_sums_to_one_per_batch_element(self):
         softmax = Softmax()
-        inputs = jnp.array([[1.0], [2.0], [3.0]])
+        inputs = jnp.array([[1.0, 2.0, 3.0], [-1.0, 0.0, 1.0]])
 
         outputs = softmax.forward(inputs)
 
-        assert jnp.sum(outputs) == pytest.approx(1.0)
+        assert outputs.shape == inputs.shape
+        assert jnp.sum(outputs, axis=-1) == pytest.approx(jnp.ones(inputs.shape[0]))
 
-    def test_backward_matches_autodiff(self):
+    def test_vjp_matches_analytical_gradient(self):
         softmax = Softmax()
-        inputs = jnp.array([[1.0], [-2.0], [0.5]])
-        out_grad = jnp.array([[0.3], [-0.7], [1.2]])
+        inputs = jnp.array([1.0, -2.0, 0.5])
+        out_grad = jnp.array([0.3, -0.7, 1.2])
 
-        softmax.forward(inputs)
-        in_grad = softmax.backward(out_grad)
+        outputs, vjp = jax.vjp(softmax.forward, inputs)
+        (in_grad,) = vjp(out_grad)
 
-        def softmax_fn(x):
-            exps = jnp.exp(x - jnp.max(x, axis=0, keepdims=True))
-            return exps / jnp.sum(exps, axis=0, keepdims=True)
-
-        _, vjp_fn = jax.vjp(softmax_fn, inputs)
-        (expected,) = vjp_fn(out_grad)
+        expected = outputs * (out_grad - jnp.sum(out_grad * outputs))
 
         assert in_grad == pytest.approx(expected, abs=1e-6)

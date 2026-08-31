@@ -1,15 +1,7 @@
-from abc import abstractmethod
-
-from nn_jax import Module
+from abc import ABC, abstractmethod
 
 
-class Optimizer:
-    def __init__(self, module: Module):
-        self.module: Module = module
-
+class Optimizer[ModelT](ABC):
     @abstractmethod
-    def step(self):
+    def __call__(self, model: ModelT, grads: ModelT) -> ModelT:
         pass
-
-    def zero_grad(self):
-        self.module.zero_grad()
