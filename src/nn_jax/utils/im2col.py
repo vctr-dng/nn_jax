@@ -1,6 +1,6 @@
 import jax.numpy as jnp
-
 from jax import Array
+
 
 def extract_patches(x: Array, kernel_size: tuple[int, ...], stride: int) -> Array:
     H_in, W_in, C_in = x.shape
@@ -18,6 +18,7 @@ def extract_patches(x: Array, kernel_size: tuple[int, ...], stride: int) -> Arra
     patches = x[rows, cols]
 
     return patches
+
 
 def output_spatial_size(in_size, kernel_size, stride, padding) -> int:
     return (in_size + 2 * padding - kernel_size) // stride + 1
