@@ -1,3 +1,5 @@
+from math import prod
+
 import jax.numpy as jnp
 from jax import Array, tree_util
 
@@ -12,7 +14,7 @@ class Flatten(Layer):
         self,
         in_size: tuple[int, ...],
     ):
-        out_size: int = jnp.prod(jnp.array(in_size))
+        out_size: int = prod(in_size)
         super().__init__(in_size, out_size)
 
     def _init_weights(self, key: Array):
