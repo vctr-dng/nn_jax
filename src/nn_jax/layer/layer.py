@@ -11,14 +11,14 @@ class Layer(Module):
 
     def __init__(
         self,
-        in_size: int,
-        out_size: int,
+        in_size: int | tuple[int, ...],
+        out_size: int | tuple[int, ...],
         key: Array | None = None,
         weights: Array | None = None,
         bias: Array | None = None,
     ):
-        self.in_size: int = in_size
-        self.out_size: int = out_size
+        self.in_size: int | tuple[int, ...] = in_size
+        self.out_size: int | tuple[int, ...] = out_size
 
         if not self.has_params:
             if key is not None or weights is not None or bias is not None:
@@ -39,16 +39,16 @@ class Layer(Module):
                 raise ValueError(
                     f"Weights shape must be {self._weights_shape}, got {weights.shape}"
                 )
-            self.weights = weights
+            self.weights: Array = weights
 
         if bias is not None:
             if bias.shape != (self.out_size,):
                 raise ValueError(
                     f"Bias shape must be ({self.out_size},), got {bias.shape}"
                 )
-            self.bias = bias
+            self.bias: Array = bias
         else:
-            self.bias = jnp.zeros((self.out_size,))
+            self.bias: Array = jnp.zeros((self.out_size,))
 
     @abstractmethod
     def _init_weights(self, key: Array):
@@ -62,8 +62,8 @@ class Layer(Module):
     @classmethod
     def from_parameters(
         cls,
-        in_size: int,
-        out_size: int,
+        in_size: int | tuple[int, ...],
+        out_size: int | tuple[int, ...],
         weights: Array,
         bias: Array,
     ) -> "Layer":
@@ -75,5 +75,5 @@ class Layer(Module):
 
     @classmethod
     @abstractmethod
-    def tree_unflatten(cls, aux_data, children) -> "Layer":
+    def tree_unflatten(cls, aux_data: tuple, children: tuple) -> "Layer":
         pass

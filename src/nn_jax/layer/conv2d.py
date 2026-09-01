@@ -22,9 +22,9 @@ class Conv2D(Layer):
         stride: int = 1,
         padding: int = 0,
     ):
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
+        self.kernel_size: tuple[int, ...] = kernel_size
+        self.stride: int = stride
+        self.padding: int = padding
         super().__init__(in_channels, out_channels, key, weights, bias)
 
     def _init_weights(self, key: Array):

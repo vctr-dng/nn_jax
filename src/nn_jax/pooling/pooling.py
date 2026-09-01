@@ -18,8 +18,8 @@ class Pooling(Layer):
         )
 
         super().__init__(in_size, out_size)
-        self.pool_size = pool_size
-        self.stride = stride
+        self.pool_size: tuple[int, ...] = pool_size
+        self.stride: int = stride
 
     def _init_weights(self, key: Array):
         raise NotImplementedError("Pooling layers do not have weights")
