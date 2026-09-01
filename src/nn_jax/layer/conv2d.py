@@ -4,16 +4,20 @@ from .layer import Layer
 
 
 class Conv2D(Layer):
+    """
+    x follows (H, W, C) format
+    """
+
     def __init__(
         self,
-        in_channels: tuple[int, ...],
-        out_channels: tuple[int, ...],
+        in_channels: int,
+        out_channels: int,
         kernel_size: tuple[int, ...],
-        stride: int = 1,
-        padding: int = 0,
         key: Array | None = None,
         weights: Array | None = None,
         bias: Array | None = None,
+        stride: int = 1,
+        padding: int = 0,
     ):
         self.kernel_size = kernel_size
         self.stride = stride
@@ -26,7 +30,7 @@ class Conv2D(Layer):
         )
 
     @property
-    def _weight_shape(self) -> tuple[int, ...]:
+    def _weights_shape(self) -> tuple[int, ...]:
         return (*self.kernel_size, self.in_size, self.out_size)
 
     def forward(self, x: Array) -> Array:

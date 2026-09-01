@@ -12,13 +12,13 @@ class Dense(Layer):
         self.weights = 0.1 * random.normal(key, (self.out_size, self.in_size))
 
     @property
-    def _weight_shape(self) -> tuple[int, ...]:
+    def _weights_shape(self) -> tuple[int, ...]:
         return (self.out_size, self.in_size)
 
     def forward(self, x: Array) -> Array:
         return self.weights @ x + self.bias
 
-    def tree_flatten(self):
+    def tree_flatten(self) -> tuple[tuple[Array, Array], tuple[int, int]]:
         children = (
             self.weights,
             self.bias,
@@ -28,7 +28,9 @@ class Dense(Layer):
         return (children, aux_data)
 
     @classmethod
-    def tree_unflatten(cls, aux_data, children):
+    def tree_unflatten(
+        cls, aux_data: tuple[int, int], children: tuple[Array, Array]
+    ) -> "Dense":
         in_size, out_size = aux_data
         weights, bias = children
 
