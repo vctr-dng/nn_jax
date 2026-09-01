@@ -1,5 +1,7 @@
+from abc import abstractmethod
+
 import jax.numpy as jnp
-from jax import Array, random
+from jax import Array
 
 from ..module import Module
 
@@ -24,9 +26,9 @@ class Layer(Module):
                 raise ValueError("Key is required if weights are not provided")
             self._init_weights(key)
         else:
-            if weights.shape != (self.out_size, self.in_size):
+            if weights.shape != self._weight_shape:
                 raise ValueError(
-                    f"Weights shape must be ({self.out_size}, {self.in_size}), got {weights.shape}"
+                    f"Weights shape must be {self._weight_shape}, got {weights.shape}"
                 )
             self.weights = weights
 
@@ -39,8 +41,14 @@ class Layer(Module):
         else:
             self.bias = jnp.zeros((self.out_size,))
 
+    @abstractmethod
     def _init_weights(self, key: Array):
-        self.weights = 0.1 * random.normal(key, (self.out_size, self.in_size))
+        pass
+
+    @property
+    @abstractmethod
+    def _weight_shape(self) -> tuple[int, ...]:
+        pass
 
     @classmethod
     def from_parameters(

@@ -1,4 +1,4 @@
-from jax import Array, tree_util
+from jax import Array, random, tree_util
 
 from .layer import Layer
 
@@ -8,21 +8,12 @@ class Dense(Layer):
     weights: Array
     bias: Array
 
-    # def __init__(
-    #     self,
-    #     in_size: int,
-    #     out_size: int,
-    #     key: Array | None = None,
-    #     weights: Array | None = None,
-    #     bias: Array | None = None,
-    # ):
-    #     super().__init__(in_size, out_size, key, weights, bias)
+    def _init_weights(self, key: Array):
+        self.weights = 0.1 * random.normal(key, (self.out_size, self.in_size))
 
-    @classmethod
-    def from_parameters(
-        cls, in_size: int, out_size: int, weights: Array, bias: Array
-    ) -> "Dense":
-        return cls(in_size, out_size, weights=weights, bias=bias)
+    @property
+    def _weight_shape(self) -> tuple[int, ...]:
+        return (self.out_size, self.in_size)
 
     def forward(self, x: Array) -> Array:
         return self.weights @ x + self.bias
