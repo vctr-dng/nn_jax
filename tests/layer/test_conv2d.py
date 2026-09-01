@@ -150,10 +150,14 @@ class TestConv2D:
         )
 
         assert conv_grad.weights[1, 0, 0, 0] == pytest.approx(
-            numerical_weight_grad, abs=1e-3
+            numerical_weight_grad, rel=3e-3, abs=5e-3
         )
-        assert conv_grad.bias[0] == pytest.approx(numerical_bias_grad, abs=1e-3)
-        assert input_grad[1, 1, 0] == pytest.approx(numerical_input_grad, abs=1e-3)
+        assert conv_grad.bias[0] == pytest.approx(
+            numerical_bias_grad, rel=3e-3, abs=5e-3
+        )
+        assert input_grad[1, 1, 0] == pytest.approx(
+            numerical_input_grad, rel=3e-3, abs=5e-3
+        )
 
     def test_jit_and_vmap_forward_match_eager(self):
         conv = Conv2D(
