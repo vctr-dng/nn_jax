@@ -3,11 +3,14 @@ from jax import Array, tree_util
 from ..layer import Layer
 from ..utils.im2col import output_spatial_size
 
+
 @tree_util.register_pytree_node_class
 class Pooling(Layer):
     has_params = False
 
-    def __init__(self, in_size: tuple[int, ...], pool_size: tuple[int, ...], stride: int = 1):
+    def __init__(
+        self, in_size: tuple[int, ...], pool_size: tuple[int, ...], stride: int = 1
+    ):
         out_size = (
             output_spatial_size(in_size[0], pool_size[0], stride, 0),
             output_spatial_size(in_size[1], pool_size[1], stride, 0),
@@ -25,13 +28,17 @@ class Pooling(Layer):
     def _weights_shape(self) -> tuple[int, ...]:
         return ()
 
-    def tree_flatten(self) -> tuple[tuple, tuple[tuple[int, ...], tuple[int, ...], int]]:
+    def tree_flatten(
+        self,
+    ) -> tuple[tuple, tuple[tuple[int, ...], tuple[int, ...], int]]:
         aux_data = (self.in_size, self.pool_size, self.stride)
-        
+
         return ((), aux_data)
 
     @classmethod
-    def tree_unflatten(cls, aux_data: tuple[tuple[int, ...], tuple[int, ...], int], _: tuple) -> "Pooling":
+    def tree_unflatten(
+        cls, aux_data: tuple[tuple[int, ...], tuple[int, ...], int], _: tuple
+    ) -> "Pooling":
         in_size, pool_size, stride = aux_data
         return cls(
             in_size=in_size,
