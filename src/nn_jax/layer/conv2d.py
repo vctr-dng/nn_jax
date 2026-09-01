@@ -1,4 +1,4 @@
-from jax import Array
+from jax import Array, random
 
 from .layer import Layer
 
@@ -15,10 +15,19 @@ class Conv2D(Layer):
         weights: Array | None = None,
         bias: Array | None = None,
     ):
-        super().__init__(in_channels, out_channels, key, weights, bias)
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
+        super().__init__(in_channels, out_channels, key, weights, bias)
+
+    def _init_weights(self, key: Array):
+        self.weights = 0.1 * random.normal(
+            key, (*self.kernel_size, self.in_size, self.out_size)
+        )
+
+    @property
+    def _weight_shape(self) -> tuple[int, ...]:
+        return (*self.kernel_size, self.in_size, self.out_size)
 
     def forward(self, x: Array) -> Array:
         pass
