@@ -1,4 +1,3 @@
-import jax.numpy as jnp
 from jax import Array, tree_util
 
 from ..utils.im2col import extract_patches
@@ -10,4 +9,4 @@ class AvgPool2D(Pooling):
     def forward(self, x: Array) -> Array:
         patches = extract_patches(x, self.pool_size, self.stride)
 
-        return jnp.mean(patches, axis=(2, 3))
+        return patches.mean(axis=(2, 3))
