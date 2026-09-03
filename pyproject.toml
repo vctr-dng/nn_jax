@@ -37,4 +37,13 @@ dev = [
 ]
 examples = [
     "huggingface-hub>=1.29.0",
+    "pillow>=12.3.0",
+    "pyarrow>=25.0.1",
+]
+
+[tool.pyrefly]
+preset = "basic"
+search-path = [
+    "scripts/",
+    "src/",
 ]
