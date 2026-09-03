@@ -1,6 +1,5 @@
 from math import prod
 
-import jax.numpy as jnp
 from jax import Array, tree_util
 
 from .layer import Layer
