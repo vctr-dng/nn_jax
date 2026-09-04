@@ -44,6 +44,5 @@ examples = [
 [tool.pyrefly]
 preset = "basic"
 search-path = [
-    "scripts/",
-    "src/",
+    "scripts/examples/",
 ]
