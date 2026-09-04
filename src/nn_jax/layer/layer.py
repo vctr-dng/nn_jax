@@ -8,6 +8,8 @@ from ..module import Module
 
 class Layer(Module):
     has_params = True
+    weights: Array
+    bias: Array
 
     def __init__(
         self,
@@ -48,7 +50,7 @@ class Layer(Module):
                 )
             self.bias: Array = bias
         else:
-            self.bias: Array = jnp.zeros((self.out_size,))
+            self.bias = jnp.zeros((self.out_size,), dtype=self.weights.dtype)
 
     @abstractmethod
     def _init_weights(self, key: Array):
