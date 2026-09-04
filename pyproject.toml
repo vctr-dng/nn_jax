@@ -1,6 +1,6 @@
 [project]
 name = "nn_jax"
-version = "0.1.0"
+version = "0.2.0"
 description = "Neural network from scratch using JAX"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -34,4 +34,16 @@ dev = [
     "pytest-cov>=7.0.0",
     "pytest-xdist>=3.8.0",
     "ruff>=0.16.5",
+]
+examples = [
+    "huggingface-hub>=1.29.0",
+    "pillow>=12.3.0",
+    "pyarrow>=25.0.1",
+    "seaborn>=0.13.2",
+]
+
+[tool.pyrefly]
+preset = "basic"
+search-path = [
+    "scripts/examples/",
 ]
