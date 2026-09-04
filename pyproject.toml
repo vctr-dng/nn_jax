@@ -39,6 +39,7 @@ examples = [
     "huggingface-hub>=1.29.0",
     "pillow>=12.3.0",
     "pyarrow>=25.0.1",
+    "seaborn>=0.13.2",
 ]
 
 [tool.pyrefly]
