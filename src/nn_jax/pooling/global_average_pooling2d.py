@@ -1,17 +1,24 @@
 from jax import Array, tree_util
 
-from .pooling import Pooling
+from ..layer import Layer
 
 
 @tree_util.register_pytree_node_class
-class GlobalAvgPool2D(Pooling):
+class GlobalAvgPool2D(Layer):
+    has_params = False
+
     def __init__(self, in_size: tuple[int, int, int]):
         if len(in_size) != 3:
             raise ValueError("in_size must contain height, width, and channels")
 
-        pool_size = (in_size[0], in_size[1])
-        super().__init__(in_size, pool_size, 1)
-        self.out_size: tuple[int] = (self.out_size[-1],)
+        super().__init__(in_size, (in_size[-1],))
+
+    def _init_weights(self, key: Array):
+        raise NotImplementedError("Global average pooling does not have weights")
+
+    @property
+    def _weights_shape(self) -> tuple[()]:
+        return ()
 
     def forward(self, x: Array) -> Array:
         return x.mean(axis=(0, 1))
