@@ -67,6 +67,23 @@ class TestConv2D:
                 bias=jnp.zeros((1,)),
             )
 
+    @pytest.mark.parametrize("kernel_size", [(3,), (3, 3, 3), (0, 3)])
+    def test_initialization_rejects_invalid_kernel_size(self, kernel_size):
+        with pytest.raises(ValueError, match="kernel_size"):
+            Conv2D(self.in_channels, self.out_channels, kernel_size)
+
+    @pytest.mark.parametrize(("stride", "padding"), [(0, 0), (1, -1)])
+    def test_initialization_rejects_invalid_stride_or_padding(self, stride, padding):
+        with pytest.raises(ValueError):
+            Conv2D(
+                self.in_channels,
+                self.out_channels,
+                self.kernel_size,
+                key=jax.random.key(0),
+                stride=stride,
+                padding=padding,
+            )
+
     def test_forward_shape(self):
         conv = Conv2D(
             self.in_channels,

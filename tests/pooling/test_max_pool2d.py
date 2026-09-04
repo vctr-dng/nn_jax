@@ -17,6 +17,19 @@ class TestMaxPool2D:
         assert pool.pool_size == self.pool_size
         assert pool.stride == 2
 
+    @pytest.mark.parametrize(
+        ("in_size", "pool_size"),
+        [
+            ((4, 4), (2, 2)),
+            ((4, 4, 1), (2,)),
+            ((4, 4, 1), (2, 2, 2)),
+            ((4, 4, 1), (0, 2)),
+        ],
+    )
+    def test_initialization_rejects_invalid_geometry(self, in_size, pool_size):
+        with pytest.raises(ValueError):
+            MaxPool2D(in_size, pool_size)
+
     def test_forward_computation(self):
         pool = MaxPool2D(self.in_size, self.pool_size, stride=2)
         inputs = jnp.array(

@@ -73,3 +73,19 @@ class TestOutputSpatialSize:
         assert (
             output_spatial_size(in_size, kernel_size, stride, padding) == expected_size
         )
+
+    @pytest.mark.parametrize(
+        ("in_size", "kernel_size", "stride", "padding", "message"),
+        [
+            (0, 2, 1, 0, "Input size"),
+            (4, 0, 1, 0, "Kernel size"),
+            (4, 2, 0, 0, "Stride"),
+            (4, 2, 1, -1, "Padding"),
+            (2, 3, 1, 0, "cannot exceed"),
+        ],
+    )
+    def test_rejects_invalid_geometry(
+        self, in_size, kernel_size, stride, padding, message
+    ):
+        with pytest.raises(ValueError, match=message):
+            output_spatial_size(in_size, kernel_size, stride, padding)

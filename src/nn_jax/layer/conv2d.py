@@ -15,14 +15,23 @@ class Conv2D(Layer):
         self,
         in_channels: int,
         out_channels: int,
-        kernel_size: tuple[int, ...],
+        kernel_size: tuple[int, int],
         key: Array | None = None,
         weights: Array | None = None,
         bias: Array | None = None,
         stride: int = 1,
         padding: int = 0,
     ):
-        self.kernel_size: tuple[int, ...] = kernel_size
+        if len(kernel_size) != 2:
+            raise ValueError("kernel_size must contain height and width")
+        if any(size <= 0 for size in kernel_size):
+            raise ValueError("kernel_size values must be positive")
+        if stride <= 0:
+            raise ValueError("Stride must be positive")
+        if padding < 0:
+            raise ValueError("Padding must be non-negative")
+
+        self.kernel_size = kernel_size
         self.stride: int = stride
         self.padding: int = padding
         super().__init__(in_channels, out_channels, key, weights, bias)
@@ -41,12 +50,12 @@ class Conv2D(Layer):
         cls,
         in_channels: int,
         out_channels: int,
-        kernel_size: tuple[int, ...],
+        kernel_size: tuple[int, int],
         weights: Array,
         bias: Array,
         stride: int = 1,
         padding: int = 0,
-    ) -> "Layer":
+    ) -> "Conv2D":
         return cls(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -78,7 +87,7 @@ class Conv2D(Layer):
 
     def tree_flatten(
         self,
-    ) -> tuple[tuple[Array, Array], tuple[int, int, int, int, int]]:
+    ) -> tuple[tuple[Array, Array], tuple[int, int, tuple[int, int], int, int]]:
         children = (
             self.weights,
             self.bias,
@@ -96,7 +105,7 @@ class Conv2D(Layer):
     @classmethod
     def tree_unflatten(
         cls,
-        aux_data: tuple[int, int, tuple[int, ...], int, int],
+        aux_data: tuple[int, int, tuple[int, int], int, int],
         children: tuple[Array, Array],
     ) -> "Conv2D":
         in_size, out_size, kernel_size, stride, padding = aux_data

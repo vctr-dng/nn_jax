@@ -14,6 +14,10 @@ class TestGlobalAvgPool2D:
         assert pool.in_size == self.in_size
         assert pool.out_size == (self.in_size[-1],)
 
+    def test_initialization_rejects_non_hwc_size(self):
+        with pytest.raises(ValueError, match="in_size"):
+            GlobalAvgPool2D((2, 3))
+
     def test_forward_computation(self):
         pool = GlobalAvgPool2D(self.in_size)
         inputs = jnp.arange(12, dtype=jnp.float32).reshape(self.in_size)

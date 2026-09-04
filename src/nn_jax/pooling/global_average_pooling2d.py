@@ -5,7 +5,10 @@ from .pooling import Pooling
 
 @tree_util.register_pytree_node_class
 class GlobalAvgPool2D(Pooling):
-    def __init__(self, in_size: tuple[int, ...]):
+    def __init__(self, in_size: tuple[int, int, int]):
+        if len(in_size) != 3:
+            raise ValueError("in_size must contain height, width, and channels")
+
         pool_size = (in_size[0], in_size[1])
         super().__init__(in_size, pool_size, 1)
         self.out_size: tuple[int] = (self.out_size[-1],)
@@ -15,14 +18,14 @@ class GlobalAvgPool2D(Pooling):
 
     def tree_flatten(
         self,
-    ) -> tuple[tuple, tuple[tuple[int, ...], tuple[int, ...], int]]:
+    ) -> tuple[tuple, tuple[tuple[int, int, int]]]:
         aux_data = (self.in_size,)
 
         return ((), aux_data)
 
     @classmethod
     def tree_unflatten(
-        cls, aux_data: tuple[tuple[int, ...]], _: tuple
+        cls, aux_data: tuple[tuple[int, int, int]], _: tuple
     ) -> "GlobalAvgPool2D":
         in_size = aux_data[0]
         return cls(
