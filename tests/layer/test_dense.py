@@ -19,6 +19,13 @@ class TestDense:
         assert dense.weights.shape == (self.out_size, self.in_size)
         assert dense.bias.shape == (self.out_size,)
 
+    def test_default_bias_preserves_weight_dtype(self):
+        weights = jnp.ones((self.out_size, self.in_size), dtype=jnp.bfloat16)
+
+        dense = Dense(self.in_size, self.out_size, weights=weights)
+
+        assert dense.bias.dtype == weights.dtype
+
     def test_initialization_requires_exactly_one_weight_source(self):
         weights = jnp.zeros((self.out_size, self.in_size))
 
