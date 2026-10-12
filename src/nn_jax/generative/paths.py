@@ -1,3 +1,4 @@
+import jax.numpy as jnp
 from jax import Array
 
 
@@ -11,6 +12,8 @@ def conditional_flow_matching_path(
     if not 0 <= sigma_min < 1:
         raise ValueError("sigma_min must be in [0, 1)")
 
+    time = jnp.asarray(time)
+    time = time.reshape(time.shape + (1,) * (noise.ndim - time.ndim))
     noise_coefficient = 1 - (1 - sigma_min) * time
     sample = noise_coefficient * noise + time * data
     velocity = data - (1 - sigma_min) * noise

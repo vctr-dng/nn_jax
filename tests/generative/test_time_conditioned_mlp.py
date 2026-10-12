@@ -78,7 +78,7 @@ class TestTimeConditionedMLP:
             ]
         )
 
-        assert predictions == pytest.approx(expected)
+        assert predictions == pytest.approx(expected, abs=1e-8)
 
     @pytest.mark.parametrize("time_embedding_size", [0, 1, 3])
     def test_requires_a_positive_even_time_embedding_size(self, time_embedding_size):

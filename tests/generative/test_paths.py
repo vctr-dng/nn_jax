@@ -37,6 +37,16 @@ class TestConditionalFlowMatchingPath:
         assert final_sample == pytest.approx(jnp.array([6.2, 2.9]))
         assert velocity == pytest.approx(jnp.array([4.2, 3.9]))
 
+    def test_batched_time_broadcasts_over_feature_dims(self):
+        noise = jnp.array([[2.0, -1.0], [0.0, 1.0]])
+        data = jnp.array([[6.0, 3.0], [4.0, -2.0]])
+        time = jnp.array([0.0, 1.0])
+
+        sample, velocity = conditional_flow_matching_path(noise, data, time)
+
+        assert sample == pytest.approx(jnp.array([[2.0, -1.0], [4.0, -2.0]]))
+        assert velocity == pytest.approx(jnp.array([[4.0, 4.0], [4.0, -3.0]]))
+
     @pytest.mark.parametrize("sigma_min", [-0.1, 1.0])
     def test_rejects_invalid_sigma_min(self, sigma_min):
         with pytest.raises(ValueError, match="sigma_min"):
