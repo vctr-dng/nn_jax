@@ -20,5 +20,6 @@ repos:
     hooks:
       - id: pyrefly-check
         name: Pyrefly (type checking)
+        entry: .venv/bin/pyrefly check --python-interpreter-path .venv/bin/python
         pass_filenames: false
         language: system
