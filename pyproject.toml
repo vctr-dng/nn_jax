@@ -5,7 +5,9 @@ description = "Neural network from scratch using JAX"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "anywidget>=0.11.0",
     "jax[cuda13]>=0.8.0",
+    "marimo>=0.25.1",
     "matplotlib>=3.10.8",
     "tqdm>=4.70.0",
 ]
@@ -36,6 +38,7 @@ dev = [
     "ruff>=0.16.5",
 ]
 examples = [
+    "anywidget>=0.9.21",
     "huggingface-hub>=1.29.0",
     "pillow>=12.3.0",
     "pyarrow>=25.0.1",
