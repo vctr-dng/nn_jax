@@ -21,10 +21,8 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install Pyrefly
-        run: |
-          uv tool install pyrefly
-          uv tool dir --bin >> "$GITHUB_PATH"
+      - name: Install project dependencies
+        run: uv sync --frozen --all-groups
 
       - id: hooks
         name: Run pre-commit hooks
