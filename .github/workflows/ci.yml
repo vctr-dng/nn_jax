@@ -17,18 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.13'
-
       - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
 
-      - name: Install hook dependencies
+      - name: Install Pyrefly
         run: |
-          uv sync --frozen --group dev --group examples
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          uv tool install pyrefly
+          uv tool dir --bin >> "$GITHUB_PATH"
 
       - id: hooks
         name: Run pre-commit hooks
