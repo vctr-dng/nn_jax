@@ -17,6 +17,19 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+
+      - name: Install hook dependencies
+        run: |
+          uv sync --frozen --group dev --group examples
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+
       - id: hooks
         name: Run pre-commit hooks
         uses: pre-commit/action@v3.0.1
